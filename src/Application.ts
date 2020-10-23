@@ -3,6 +3,8 @@ import { DatabaseService, IResponse } from './DatabaseService';
 import { IndicatorService } from './IndicatorService';
 import { SellTrader, BuyTrader, OrderService, Order } from './Trader';
 import { trace } from 'console';
+const asciichart = require ('asciichart');
+
 
 
 // const tradingInformationService = TradingInformationService.getInstance();
@@ -28,6 +30,7 @@ import { trace } from 'console';
 
 const buyerArray: BuyTrader[] = [];
 const sellerArray: SellTrader[] = [];
+const tradeHistory: number[] = [];
 
 for (let index = 0; index < 5; index++) {
     buyerArray[index] = new BuyTrader(index, 30, 70);    
@@ -40,29 +43,56 @@ for (let index = 0; index < 5; index++) {
 OrderService.sellOrderList.sort((firstOrder , secondOrder) => firstOrder.price < secondOrder.price ? 1 : -1);
 OrderService.buyOrderList.sort((firstOrder , secondOrder) => firstOrder.price < secondOrder.price ? 1 : -1);
 
-for (let index = 0; index < OrderService.sellOrderList.length; index++) {
-    const sellOrder: Order = OrderService.sellOrderList[index];
-    if (sellOrder.filled) continue;
+const tradeAvailableOrders = () => {
 
-    for (let innerIndex = 0; innerIndex < OrderService.buyOrderList.length; innerIndex++) {
-        const buyOrder: Order = OrderService.buyOrderList[index];
-
-        if (buyOrder.filled) continue;
-
-        if (sellOrder.price == buyOrder.price) {
-            OrderService.trade(sellOrder, buyOrder, sellOrder.price);
-            console.log("TRADE");
+    for (let index = 0; index < OrderService.sellOrderList.length; index++) {
+        const sellOrder: Order = OrderService.sellOrderList[index];
+        if (sellOrder.filled) continue;
+    
+        for (let innerIndex = 0; innerIndex < OrderService.buyOrderList.length; innerIndex++) {
+            const buyOrder: Order = OrderService.buyOrderList[index];
+    
+            if (buyOrder.filled) continue;
+    
+            if (sellOrder.price === buyOrder.price) {
+                console.log("TRADE WITH SAME PRICE: " + sellOrder.price);
+                tradeHistory.push(sellOrder.price);
+                OrderService.trade(sellOrder, buyOrder, sellOrder.price);
+                
+            } else if (sellOrder.price < buyOrder.price) {
+                const midPrice = Math.round((sellOrder.price + buyOrder.price) / 2); 
+                console.log("TRADE WITH DIFFERENT PRICES: " + midPrice);
+                tradeHistory.push(midPrice);
+                OrderService.trade(sellOrder, buyOrder, midPrice);
+            }  
             
-        } else if (sellOrder.price <= buyOrder.price) {
-            const midPrice = Math.round((sellOrder.price + buyOrder.price) / 2); 
-            OrderService.trade(sellOrder, buyOrder, midPrice);
-            console.log("TRADE");
-        }  
+        }
         
     }
+
+}
+     
+
+const adjustAllOrderPrices = () => {
+    buyerArray.forEach(buyer => {
+        buyer.adjustOrderPrices();
+    })
     
+    sellerArray.forEach(seller => {
+        seller.adjustOrderPrices();
+    })    
 }
 
-console.log(OrderService.sellOrderList);
+for (let index = 0; index < 20; index++) {
+    console.log("Iteration Nr." + index);
+    
+    tradeAvailableOrders();
+    adjustAllOrderPrices();
+}
+
+console.log(asciichart.plot(tradeHistory));
+
+// console.log(OrderService.sellOrderList);
+// console.log(OrderService.buyOrderList);
 
 

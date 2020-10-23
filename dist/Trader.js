@@ -17,13 +17,24 @@ class BuyTrader {
         this.initOrders();
     }
     initOrders() {
-        for (let index = 0; index < 5; index++) {
-            const order = new Order(this, this.price, this.tradeOrderPrice);
+        for (let index = 0; index < 20; index++) {
+            const order = new Order(this.price, this.tradeOrderPrice);
             this.orderList.push(order);
             OrderService.buyOrderList.push(order);
         }
     }
-    checkOrder(currentPrice) {
+    adjustOrderPrices() {
+        this.orderList.forEach(order => {
+            const priceAdjustmentNumber = randomNumberFromOneTo(2);
+            if (order.filled) {
+                if (order.price - priceAdjustmentNumber > 0) {
+                    order.price -= priceAdjustmentNumber;
+                }
+            }
+            else {
+                order.price += priceAdjustmentNumber;
+            }
+        });
     }
     addOrder(order) {
         this.orderList.push(order);
@@ -41,13 +52,24 @@ class SellTrader {
         this.initOrders();
     }
     initOrders() {
-        for (let index = 0; index < 5; index++) {
-            const order = new Order(this, this.price, this.tradeOrderPrice);
+        for (let index = 0; index < 20; index++) {
+            const order = new Order(this.price, this.tradeOrderPrice);
             this.orderList.push(order);
             OrderService.sellOrderList.push(order);
         }
     }
-    checkOrder(lowestPrice) {
+    adjustOrderPrices() {
+        this.orderList.forEach(order => {
+            const priceAdjustmentNumber = randomNumberFromOneTo(2);
+            if (order.filled) {
+                if (order.price - priceAdjustmentNumber > 0) {
+                    order.price += priceAdjustmentNumber;
+                }
+            }
+            else {
+                order.price -= priceAdjustmentNumber;
+            }
+        });
     }
     addOrder(order) {
         this.orderList.push(order);
@@ -56,14 +78,13 @@ class SellTrader {
 }
 exports.SellTrader = SellTrader;
 class Order {
-    constructor(trader, price, tradeOrderPrice) {
-        this.trader = trader;
+    constructor(price, tradeOrderPrice) {
         this.price = price;
         this.tradeOrderPrice = tradeOrderPrice;
         this.filled = false;
         this.filledPrice = -1;
     }
-    orderFilled(filledPrice) {
+    fillOrder(filledPrice) {
         this.filledPrice = filledPrice;
         this.filled = true;
         this.price = this.tradeOrderPrice;
@@ -72,8 +93,8 @@ class Order {
 exports.Order = Order;
 class OrderService {
     static trade(sellOrder, buyOrder, tradePrice) {
-        sellOrder.orderFilled(tradePrice);
-        buyOrder.orderFilled(tradePrice);
+        sellOrder.fillOrder(tradePrice);
+        buyOrder.fillOrder(tradePrice);
     }
 }
 exports.OrderService = OrderService;
