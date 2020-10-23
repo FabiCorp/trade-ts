@@ -1,3 +1,5 @@
+export enum OrderType { SELL, BUY }
+
 export class Order {
 
     public finished: boolean = false;
