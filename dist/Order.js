@@ -1,6 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.OrderService = exports.Order = void 0;
+exports.OrderService = exports.Order = exports.OrderType = void 0;
+var OrderType;
+(function (OrderType) {
+    OrderType[OrderType["SELL"] = 0] = "SELL";
+    OrderType[OrderType["BUY"] = 1] = "BUY";
+})(OrderType = exports.OrderType || (exports.OrderType = {}));
 class Order {
     constructor(price, tradeOrderPrice) {
         this.price = price;

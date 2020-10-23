@@ -20,16 +20,16 @@ const asciichart = require('asciichart');
 //     }
 // }
 // databaseService.findResponse(responseCallback);
-const buyerArray = [];
-const sellerArray = [];
+const traderList = [];
 const tradeHistory = [];
 for (let index = 0; index < 10; index++) {
-    buyerArray[index] = new Trader_1.BuyTrader(index, 30, 70);
+    traderList.push(new Trader_1.BuyTrader(index, 30, 70));
 }
 for (let index = 0; index < 10; index++) {
-    sellerArray[index] = new Trader_1.SellTrader(index, 70, 30);
+    traderList.push(new Trader_1.SellTrader(index, 70, 30));
 }
 const edgeTrader = new EdgeTrader_1.EdgeTrader(0, 45, 55);
+traderList.push(edgeTrader);
 // OrderService.sellOrderList.sort((firstOrder , secondOrder) => firstOrder.price < secondOrder.price ? -1 : 1);
 // OrderService.buyOrderList.sort((firstOrder , secondOrder) => firstOrder.price < secondOrder.price ? 1 : -1);
 const tradeAvailableOrders = () => {
@@ -58,13 +58,9 @@ const tradeAvailableOrders = () => {
     }
 };
 const adjustAllOrderPrices = () => {
-    buyerArray.forEach(buyer => {
-        buyer.adjustOrderPrices();
+    traderList.forEach(trader => {
+        trader.adjustOrderPrices();
     });
-    sellerArray.forEach(seller => {
-        seller.adjustOrderPrices();
-    });
-    edgeTrader.adjustOrderPrices();
 };
 for (let index = 0; index < 20; index++) {
     // console.log("Iteration Nr." + index);
@@ -72,12 +68,8 @@ for (let index = 0; index < 20; index++) {
     adjustAllOrderPrices();
 }
 console.log(asciichart.plot(tradeHistory));
-buyerArray.forEach(buyer => {
-    console.log("Buyer: " + buyer.calculateWin());
+traderList.forEach(trader => {
+    console.log("Trader: " + trader.calculateWin());
 });
-sellerArray.forEach(seller => {
-    console.log("Seller: " + seller.calculateWin());
-});
-console.log("EdgeTrader: " + edgeTrader.calculateWin());
 // console.log(OrderService.buyOrderList.length);
 //# sourceMappingURL=Application.js.map

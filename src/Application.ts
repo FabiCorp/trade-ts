@@ -1,7 +1,7 @@
 import { TradingInformationService } from './TradingInformationService';
 import { DatabaseService, IResponse } from './DatabaseService';
 import { IndicatorService } from './IndicatorService';
-import { SellTrader, BuyTrader } from './Trader';
+import { Trader, SellTrader, BuyTrader } from './Trader';
 import { OrderService, Order } from './Order';
 import { EdgeTrader } from './EdgeTrader';
 const asciichart = require ('asciichart');
@@ -27,20 +27,19 @@ const asciichart = require ('asciichart');
 
 // databaseService.findResponse(responseCallback);
 
-const buyerArray: BuyTrader[] = [];
-const sellerArray: SellTrader[] = [];
+const traderList: Trader[] = [];
 const tradeHistory: number[] = [];
 
 for (let index = 0; index < 10; index++) {
-    buyerArray[index] = new BuyTrader(index, 30, 70);    
+    traderList.push(new BuyTrader(index, 30, 70));    
 }
 
 for (let index = 0; index < 10; index++) {
-    sellerArray[index] = new SellTrader(index, 70, 30);    
+    traderList.push(new SellTrader(index, 70, 30));    
 }
 
 const edgeTrader = new EdgeTrader(0, 45, 55);
-
+traderList.push(edgeTrader);
 
 // OrderService.sellOrderList.sort((firstOrder , secondOrder) => firstOrder.price < secondOrder.price ? -1 : 1);
 // OrderService.buyOrderList.sort((firstOrder , secondOrder) => firstOrder.price < secondOrder.price ? 1 : -1);
@@ -80,14 +79,9 @@ const tradeAvailableOrders = () => {
      
 
 const adjustAllOrderPrices = () => {
-    buyerArray.forEach(buyer => {
-        buyer.adjustOrderPrices();
+    traderList.forEach(trader => {
+        trader.adjustOrderPrices();
     })
-    
-    sellerArray.forEach(seller => {
-        seller.adjustOrderPrices();
-    })    
-    edgeTrader.adjustOrderPrices();
 }
 
 for (let index = 0; index < 20; index++) {
@@ -100,15 +94,9 @@ for (let index = 0; index < 20; index++) {
 
 console.log(asciichart.plot(tradeHistory));
 
-buyerArray.forEach(buyer => {
-    console.log("Buyer: " + buyer.calculateWin());
+traderList.forEach(trader => {
+    console.log("Trader: " + trader.calculateWin());
 })
-
-sellerArray.forEach(seller => {
-    console.log("Seller: " + seller.calculateWin());
-})  
-
-console.log("EdgeTrader: " + edgeTrader.calculateWin())
 
 // console.log(OrderService.buyOrderList.length);
 

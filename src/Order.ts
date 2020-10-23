@@ -31,7 +31,6 @@ export class OrderService {
         sellOrder.fillOrder(tradePrice);
         buyOrder.fillOrder(tradePrice);
         this.moveFilledOrders(sellOrder, buyOrder, sellIndex, buyIndex);
-
     }
 
     private static moveFilledOrders = (sellOrder: Order, buyOrder: Order, sellIndex: number, buyIndex: number) => {
