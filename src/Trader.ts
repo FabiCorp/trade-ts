@@ -1,30 +1,35 @@
+import { OrderService, Order } from './Order';
 
+export abstract class Trader {
 
-export enum PositionType {
-    Sell,
-    Buy
-}
+    protected orderList: Order[] = [];
+    protected finishedOrderList: Order[] = [];
+    protected initPrice: number;
 
-
-interface Trader {
-    addOrder(order: Order): void;
-    adjustOrderPrices(): void;
-}
-
-const randomNumberFromOneTo = (max: number) => Math.floor(Math.random() * max) + 1;
-
-export class BuyTrader implements Trader {
-    
-    private orderList: Order[] = [];
-    private initPrice: number;
-
-    constructor(public readonly id: number, private price: number, private tradeOrderPrice: number) {
+    constructor(protected readonly id: number, protected price: number, protected tradeOrderPrice: number) {
         this.initPrice = this.price;
         this.initOrders();
     }
 
-    private initOrders() {
-        for (let index = 0; index < 20; index++) {
+    public addOrder(order: Order): void {
+        this.orderList.push(order);
+    }
+
+    protected abstract initOrders(): void;
+    abstract adjustOrderPrices(): void;
+    abstract calculateWin(): number;
+}
+
+export const randomNumberFromOneTo = (max: number) => Math.floor(Math.random() * max) + 1;
+
+export class BuyTrader extends Trader {
+
+    constructor(id: number, price: number, tradeOrderPrice: number) {
+        super(id, price, tradeOrderPrice);
+    }
+
+    protected initOrders() {
+        for (let index = 0; index < 10; index++) {
             const order = new Order(this.price, this.tradeOrderPrice)
             this.orderList.push(order);
             OrderService.buyOrderList.push(order);
@@ -32,8 +37,16 @@ export class BuyTrader implements Trader {
     }
 
     public adjustOrderPrices() {
-        this.orderList.forEach(order => {
-            const priceAdjustmentNumber = randomNumberFromOneTo(2);
+        let orderIndex = this.orderList.length;
+        while (orderIndex--) {
+            const order = this.orderList[orderIndex];
+            const priceAdjustmentNumber = randomNumberFromOneTo(10);
+
+            if (order.finished) {
+                this.finishedOrderList.push(order);
+                this.orderList.splice(orderIndex, 1);
+                continue;
+            }
 
             if (order.filled) {
                 if (order.price - priceAdjustmentNumber > 0) {
@@ -43,28 +56,28 @@ export class BuyTrader implements Trader {
                 order.price += priceAdjustmentNumber;
             }
 
-        });
+        }
+
     }
 
-    public addOrder(order: Order): void {
-        this.orderList.push(order);
-        this.price = this.initPrice;
+    public calculateWin(): number {
+        let win = 0;
+        this.finishedOrderList.forEach(order => {
+            win += (order.endPrice - order.filledPrice);
+        })
+        return win;
     }
 
 }
 
-export class SellTrader implements Trader {
-    
-    private orderList: Order[] = [];
-    private initPrice: number;
+export class SellTrader extends Trader {
 
-    constructor(public readonly id: number, private price: number, private tradeOrderPrice: number) {
-        this.initPrice = this.price;
-        this.initOrders();
+    constructor(id: number, price: number, tradeOrderPrice: number) {
+        super(id, price, tradeOrderPrice);
     }
 
-    private initOrders() {
-        for (let index = 0; index < 20; index++) {
+    protected initOrders() {
+        for (let index = 0; index < 10; index++) {
             const order = new Order(this.price, this.tradeOrderPrice)
             this.orderList.push(order);
             OrderService.sellOrderList.push(order);
@@ -72,8 +85,16 @@ export class SellTrader implements Trader {
     }
 
     public adjustOrderPrices() {
-        this.orderList.forEach(order => {
-            const priceAdjustmentNumber = randomNumberFromOneTo(2);
+        let orderIndex = this.orderList.length;
+        while (orderIndex--) {
+            const order = this.orderList[orderIndex];
+            const priceAdjustmentNumber = randomNumberFromOneTo(10);
+
+            if (order.finished) {
+                this.finishedOrderList.push(order);
+                this.orderList.splice(orderIndex, 1);
+                continue;
+            }
 
             if (order.filled) {
                 if (order.price - priceAdjustmentNumber > 0) {
@@ -83,36 +104,15 @@ export class SellTrader implements Trader {
                 order.price -= priceAdjustmentNumber;
             }
 
-        });
+        }
     }
 
-    public addOrder(order: Order): void {
-        this.orderList.push(order);
-        this.price = this.initPrice;
+    public calculateWin(): number {
+        let win = 0;
+        this.finishedOrderList.forEach(order => {
+            win += (order.filledPrice - order.endPrice);
+        })
+        return win;
     }
 
-}
-
-export class Order {
-
-    public filled: boolean = false;
-    public filledPrice: number = -1;
-
-    constructor(public price: number, private readonly tradeOrderPrice: number) { }
-
-    public fillOrder(filledPrice: number) {
-        this.filledPrice = filledPrice;
-        this.filled = true;
-        this.price = this.tradeOrderPrice;
-    }
-}
-
-export class OrderService {
-    public static readonly buyOrderList: Order[] = [];
-    public static readonly sellOrderList: Order[] = [];
-
-    public static trade(sellOrder: Order, buyOrder: Order, tradePrice: number) {
-        sellOrder.fillOrder(tradePrice);
-        buyOrder.fillOrder(tradePrice);
-    }
 }
