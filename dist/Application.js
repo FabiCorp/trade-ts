@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const Trader_1 = require("./Trader");
+const SellTrader_1 = require("./trader/SellTrader");
+const BuyTrader_1 = require("./trader/BuyTrader");
 const Order_1 = require("./Order");
-const EdgeTrader_1 = require("./EdgeTrader");
 const asciichart = require('asciichart');
 // const tradingInformationService = TradingInformationService.getInstance();
 // const databaseService = DatabaseService.getInstance();
@@ -21,18 +21,13 @@ const asciichart = require('asciichart');
 // }
 // databaseService.findResponse(responseCallback);
 const traderList = [];
-const tradeHistory = [];
-for (let index = 0; index < 10; index++) {
-    traderList.push(new Trader_1.BuyTrader(index, 30, 70));
-}
-for (let index = 0; index < 10; index++) {
-    traderList.push(new Trader_1.SellTrader(index, 70, 30));
-}
-const edgeTrader = new EdgeTrader_1.EdgeTrader(0, 45, 55);
-traderList.push(edgeTrader);
-// OrderService.sellOrderList.sort((firstOrder , secondOrder) => firstOrder.price < secondOrder.price ? -1 : 1);
-// OrderService.buyOrderList.sort((firstOrder , secondOrder) => firstOrder.price < secondOrder.price ? 1 : -1);
+const tradeHistory = [50];
+// for (let index = 0; index < 10; index++) {
+//     traderList.push(new BuyTrader(index, 30, 70)); 
+//     traderList.push(new SellTrader(index, 70, 30));
+// }
 const tradeAvailableOrders = () => {
+    Order_1.OrderService.shuffleOrderLists();
     let sellIndex = Order_1.OrderService.sellOrderList.length;
     while (sellIndex--) {
         const sellOrder = Order_1.OrderService.sellOrderList[sellIndex];
@@ -62,14 +57,27 @@ const adjustAllOrderPrices = () => {
         trader.adjustOrderPrices();
     });
 };
-for (let index = 0; index < 20; index++) {
+const addBuyTrader = (start, end) => {
+    traderList.push(new BuyTrader_1.BuyTrader(0, start, end));
+};
+const addSellTrader = (start, end) => {
+    traderList.push(new SellTrader_1.SellTrader(0, start, end));
+};
+for (let index = 0; index < 100; index++) {
     // console.log("Iteration Nr." + index);
+    const lastMarketPrice = tradeHistory[tradeHistory.length - 1];
+    if (index < 40) {
+        addBuyTrader(lastMarketPrice - 10, lastMarketPrice + 10);
+        addSellTrader(lastMarketPrice + 15, lastMarketPrice - 10);
+    }
+    else {
+        addBuyTrader(lastMarketPrice - 15, lastMarketPrice + 10);
+        addSellTrader(lastMarketPrice + 10, lastMarketPrice - 10);
+    }
     tradeAvailableOrders();
     adjustAllOrderPrices();
 }
 console.log(asciichart.plot(tradeHistory));
-traderList.forEach(trader => {
-    console.log("Trader: " + trader.calculateWin());
-});
+traderList.forEach(trader => { trader.calculateWin(); });
 // console.log(OrderService.buyOrderList.length);
 //# sourceMappingURL=Application.js.map

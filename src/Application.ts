@@ -1,9 +1,11 @@
 import { TradingInformationService } from './TradingInformationService';
 import { DatabaseService, IResponse } from './DatabaseService';
 import { IndicatorService } from './IndicatorService';
-import { Trader, SellTrader, BuyTrader } from './Trader';
+import { Trader } from './trader/Trader';
+import { SellTrader } from './trader/SellTrader';
+import { BuyTrader } from './trader/BuyTrader';
 import { OrderService, Order } from './Order';
-import { EdgeTrader } from './EdgeTrader';
+import { EdgeBuyTrader } from './trader/EdgeBuyTrader';
 const asciichart = require ('asciichart');
 
 // const tradingInformationService = TradingInformationService.getInstance();
@@ -28,25 +30,20 @@ const asciichart = require ('asciichart');
 // databaseService.findResponse(responseCallback);
 
 const traderList: Trader[] = [];
-const tradeHistory: number[] = [];
+const tradeHistory: number[] = [ 50 ];
 
-for (let index = 0; index < 10; index++) {
-    traderList.push(new BuyTrader(index, 30, 70));    
-}
+// for (let index = 0; index < 10; index++) {
+//     traderList.push(new BuyTrader(index, 30, 70)); 
+//     traderList.push(new SellTrader(index, 70, 30));
+// }
 
-for (let index = 0; index < 10; index++) {
-    traderList.push(new SellTrader(index, 70, 30));    
-}
-
-const edgeTrader = new EdgeTrader(0, 45, 55);
-traderList.push(edgeTrader);
-
-// OrderService.sellOrderList.sort((firstOrder , secondOrder) => firstOrder.price < secondOrder.price ? -1 : 1);
-// OrderService.buyOrderList.sort((firstOrder , secondOrder) => firstOrder.price < secondOrder.price ? 1 : -1);
 const tradeAvailableOrders = () => {
+    OrderService.shuffleOrderLists()
 
     let sellIndex = OrderService.sellOrderList.length;
+    
     while (sellIndex--) {
+        
         const sellOrder: Order = OrderService.sellOrderList[sellIndex];
         
         let buyIndex = OrderService.buyOrderList.length;
@@ -84,9 +81,26 @@ const adjustAllOrderPrices = () => {
     })
 }
 
-for (let index = 0; index < 20; index++) {
+const addBuyTrader= (start: number, end: number) => {
+    traderList.push(new BuyTrader(0, start, end)); 
+
+}
+
+const addSellTrader= (start: number, end: number) => {
+    traderList.push(new SellTrader(0, start, end));
+
+}
+
+for (let index = 0; index < 100; index++) {
     // console.log("Iteration Nr." + index);
-    
+    const lastMarketPrice = tradeHistory[tradeHistory.length - 1];
+    if (index < 40) {
+        addBuyTrader(lastMarketPrice - 10, lastMarketPrice + 10);
+        addSellTrader(lastMarketPrice + 15, lastMarketPrice - 10);
+    } else {
+        addBuyTrader(lastMarketPrice - 15, lastMarketPrice + 10);
+        addSellTrader(lastMarketPrice + 10, lastMarketPrice - 10);
+    }
     tradeAvailableOrders();
     adjustAllOrderPrices();
 
@@ -94,9 +108,7 @@ for (let index = 0; index < 20; index++) {
 
 console.log(asciichart.plot(tradeHistory));
 
-traderList.forEach(trader => {
-    console.log("Trader: " + trader.calculateWin());
-})
+traderList.forEach(trader => { trader.calculateWin(); })
 
 // console.log(OrderService.buyOrderList.length);
 

@@ -1,5 +1,15 @@
 export enum OrderType { SELL, BUY }
 
+Object.defineProperty(Array.prototype, 'shuffle', {
+    value: function() {
+        for (let i = this.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [this[i], this[j]] = [this[j], this[i]];
+        }
+        return this;
+    }
+});
+
 export class Order {
 
     public finished: boolean = false;
@@ -7,7 +17,7 @@ export class Order {
     public filledPrice: number = -1;
     public endPrice: number = -1;
 
-    constructor(public price: number, private readonly tradeOrderPrice: number) { }
+    constructor(public price: number, private readonly tradeOrderPrice: number, private readonly orderType: OrderType) { }
 
     public fillOrder(filledPrice: number) {
         // console.log("TRADE filled: " + this.filled + " price: " + filledPrice);
@@ -19,8 +29,30 @@ export class Order {
             this.filled = true;
             this.price = this.tradeOrderPrice;
         }
-
     }
+
+    public calculateWin(): number {
+
+        if (!this.finished) return -1;
+
+        if (this.orderType === OrderType.BUY) {
+            return this.endPrice - this.filledPrice;
+        } else {
+            return this.filledPrice - this.endPrice;
+        }
+    }
+}
+
+/**
+ * Shuffles array in place. ES6 version
+ * @param {Array} a items An array containing the items.
+*/
+const shuffleArray = (array: any[]) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
 }
 
 export class OrderService {
@@ -43,4 +75,11 @@ export class OrderService {
             OrderService.buyOrderList.push(sellOrder);
         } 
     }
+
+    public static shuffleOrderLists() {
+        shuffleArray(this.buyOrderList);
+        shuffleArray(this.sellOrderList);
+    }
+
+    
 }

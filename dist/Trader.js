@@ -73,7 +73,7 @@ class SellTrader extends Trader {
         let orderIndex = this.orderList.length;
         while (orderIndex--) {
             const order = this.orderList[orderIndex];
-            const priceAdjustmentNumber = exports.randomNumberFromOneTo(10);
+            const priceAdjustmentNumber = exports.randomNumberFromOneTo(3);
             if (order.finished) {
                 this.finishedOrderList.push(order);
                 this.orderList.splice(orderIndex, 1);

@@ -1,7 +1,7 @@
 import { Trader }  from './Trader';
-import { OrderService, Order } from './Order';
+import { OrderService, Order, OrderType } from '../Order';
 
-export class EdgeTrader extends Trader {
+export class EdgeBuyTrader extends Trader {
 
     constructor(id: number, price: number, tradeOrderPrice: number) {
         super(id, price, tradeOrderPrice);
@@ -9,10 +9,14 @@ export class EdgeTrader extends Trader {
 
     protected initOrders() {
         for (let index = 0; index < 30; index++) {
-            const order = new Order(this.price, this.tradeOrderPrice);
-            this.orderList.push(order);
-            OrderService.buyOrderList.push(order);
+            this.addOrder();
         }
+    }
+
+    public addOrder() {
+        const order = new Order(this.price, this.tradeOrderPrice, OrderType.BUY);
+        this.orderList.push(order);
+        OrderService.buyOrderList.push(order);
     }
 
     public adjustOrderPrices() {
@@ -28,15 +32,6 @@ export class EdgeTrader extends Trader {
 
         }
 
-    }
-
-    public calculateWin(): number {
-        let win = 0;
-
-        this.finishedOrderList.forEach(order => {
-            win += (order.endPrice - order.filledPrice);
-        })
-        return win;
     }
 
 }
